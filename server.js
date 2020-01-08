@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 // env
 dotenv.config();
 
-const uri = 'mongodb+srv://dbUser:' + process.env.MONGOPASS + '@' + process.env.MONGOAD + '?retryWrites=true&w=majority';
+const uri = 'mongodb+srv://dbUser:' + process.env.MONGOPASS + '@' + process.env.MONGOAD;
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true }, () => {
   console.log('hi');
 });
