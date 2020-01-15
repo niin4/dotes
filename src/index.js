@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import Typography from '@material-ui/core/Typography';
-
+import { StoreProvider } from './store';
 
 // THEME
 import { ThemeProvider as MuiThemeProvider } from '@material-ui/core/styles';
@@ -12,7 +12,9 @@ import theme from './styles/theme';
 const render = (Component) => {
   ReactDOM.render(<MuiThemeProvider theme={theme}>
     <Typography component="div">
-      <Component />
+      <StoreProvider>
+        <Component />
+      </StoreProvider>
     </Typography>
   </MuiThemeProvider>,
   document.getElementById('root'),

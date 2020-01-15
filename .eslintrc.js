@@ -26,6 +26,8 @@ module.exports = {
         "linebreak-style": ["off"],
         "require-jsdoc": ["off"],
         "indent": ["error", 2],
-        "object-curly-spacing": ["off"]
+        "object-curly-spacing": ["off"],
+        "react/prop-types": ["off"],
+        "react-hooks/exhaustive-deps": ["off"]
     }
 };

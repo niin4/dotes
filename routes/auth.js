@@ -1,21 +1,16 @@
-var passport = require('passport');
-const User = require('../models/UserModel');
+const passport = require('passport');
+const jwt = require('jsonwebtoken');
 
-async function createUser(username) {
-  return new User({
-    username,
-    created: Date.now()
-  }).save()
+function signToken(user) {
+  return jwt.sign({ user: user }, process.env.JWT_SECRET, {
+    expiresIn: 604800,
+  });
 }
 
-async function findUser(username) {
-  return await User.findOne({ username })
-}
+module.exports = (function() {
+  const auth = require('express').Router();
 
-module.exports = (function () {
-  var auth = require('express').Router();
-
-  //auth routes
+  // auth routes
   auth.get('/google', passport.authenticate('google'));
 
   // This is where Google sends users once they authenticate with Google
@@ -23,17 +18,47 @@ module.exports = (function () {
   auth.get('/google/callback',
     passport.authenticate('google', { failureRedirect: '/' }),
     (req, res) => {
+      const token = signToken(req.user.userFromDb);
       console.log(req.user);
-
-      // get JWT, give JWT, save JWT. If JWT exists, use that to login, otherwise require google again
-
-      res.redirect('/');
-    }
+      let redirect = '/login?token=' + token;
+      if (req.user.new) {
+        redirect = '/register?token=' + token;
+      }
+      if (process.env.mode && process.env.mode === 'DEV') {
+        if (req.user.new) {
+          redirect ='http://localhost:5051/register?token=' + token;
+        } else {
+          redirect = 'http://localhost:5051/login?token=' + token;
+        }
+      }
+      return res
+        .status(200)
+        .cookie('jwt', token, {
+          httpOnly: true,
+        })
+        .redirect(redirect);
+    },
   );
 
-  auth.get('/logout', function (req, res) {
+  auth.post('/jwt', passport.authenticate('jwt', { session: false }),
+    function(req, res) {
+      const token = signToken(req.user.userFromDb);
+      console.log(req.user);
+      return res
+        .status(200)
+        .cookie('jwt', token, {
+          httpOnly: true,
+        })
+        .send({token});
+    });
+
+  auth.get('/logout', function(req, res) {
     req.logout();
-    res.redirect('/');
+    if (process.env.mode && process.env.mode === 'DEV') {
+      res.redirect('http://localhost:5051');
+    } else {
+      res.redirect('/');
+    }
   });
 
   return auth;

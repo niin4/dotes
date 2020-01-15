@@ -6,21 +6,23 @@ const path = require('path');
 const https = require('https');
 const session = require('express-session');
 const mongoose = require('mongoose');
+const cors = require('cors');
+const bodyParser = require('body-parser')
 
+app.use(cors());
+app.use(bodyParser.json())
 // env
 dotenv.config();
 
-const uri = 'mongodb+srv://dbUser:' + process.env.MONGOPASS + '@' + process.env.MONGOAD;
-mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true }, () => {
-  console.log('hi');
-});
+// db
+require('./database');
 
-// Add session support
+/* Add session support
 app.use(session({
   secret: process.env.SESSION_SECRET || 'default_session_secret',
   resave: false,
   saveUninitialized: false,
-}));
+}));*/
 
 // Checks if a user is logged in
 const accessProtectionMiddleware = (req, res, next) => {
@@ -33,10 +35,12 @@ const accessProtectionMiddleware = (req, res, next) => {
   }
 };
 
-require('./googleStrategy')(app);
+require('./auth/authStrategy')(app);
 // auth routes
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
+const apiRoutes = require('./routes/api');
+app.use('/api', apiRoutes);
 
 // api routes TODO: move elsewhere
 
